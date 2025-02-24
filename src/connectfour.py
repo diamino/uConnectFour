@@ -39,6 +39,7 @@ class Grid():
                     return cells
             else:
                 count = 0
+                cells = []
         return []
 
     def check_horizontal(self, row: int, player: int) -> list[tuple[int, int]]:
@@ -52,10 +53,39 @@ class Grid():
                     return cells
             else:
                 count = 0
+                cells = []
         return []
 
-    def check_diagonal(self, row: int, column: int, player: int) -> bool:
-        ...
+    def check_diagonal(self, column: int, row: int, player: int) -> list[tuple[int, int]]:
+        # Check bottom-up, left-right
+        count = 0
+        cells = []
+        start_offset = -min(row, column)  # Left boundary
+        end_offset = min(self.rows - row, self.columns - column)  # Right boundary
+        for offset in range(start_offset, end_offset):
+            if self.grid[column + offset][row + offset] == player:
+                count += 1
+                cells.append((column + offset, row + offset))
+                if count >= 4:
+                    return cells
+            else:
+                cells = []
+                count = 0
+        # Check bottom-up, right-left
+        count = 0
+        cells = []
+        start_offset = -min(row, self.columns - column)  # Right boundary
+        end_offset = min(self.rows - row, column)  # Left boundary
+        for offset in range(start_offset, end_offset):
+            if self.grid[column - offset][row + offset] == player:
+                count += 1
+                cells.append((column - offset, row + offset))
+                if count >= 4:
+                    return cells
+            else:
+                cells = []
+                count = 0
+        return []
 
 
 def main() -> None:
