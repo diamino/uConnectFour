@@ -28,6 +28,18 @@ class Grid():
         self.grid[column][first_free] = player
         return first_free
 
+    def check_win(self, column: int, row: int, player: int) -> list[tuple[int, int]]:
+        result = self.check_vertical(column, player)
+        if result:
+            return result
+        result = self.check_horizontal(row, player)
+        if result:
+            return result
+        result = self.check_diagonal(column, row, player)
+        if result:
+            return result
+        return []
+
     def check_vertical(self, column: int, player: int) -> list[tuple[int, int]]:
         count = 0
         cells = []
@@ -74,9 +86,11 @@ class Grid():
         # Check bottom-up, right-left
         count = 0
         cells = []
-        start_offset = -min(row, self.columns - column)  # Right boundary
+        start_offset = -min(row, self.columns - column - 1)  # Right boundary
         end_offset = min(self.rows - row, column)  # Left boundary
+        # print(f"{start_offset=}  {end_offset=}")
         for offset in range(start_offset, end_offset):
+            # print(f"Checking c={column - offset} r={row + offset}")
             if self.grid[column - offset][row + offset] == player:
                 count += 1
                 cells.append((column - offset, row + offset))
@@ -116,6 +130,7 @@ def main() -> None:
     NO_LEDS = DISP_HEIGHT * DISP_WIDTH  # 8x8 LED matrix
     DATA_PIN = 0
     PALETTE = [0, PURPLE_565, GREEN_565]
+    OFFSET = (0, 2)
 
     grid = Grid()
     np = NeoPixel(Pin(DATA_PIN), NO_LEDS)
@@ -146,14 +161,22 @@ def main() -> None:
         if vpos == DOWN:
             try:
                 row = grid.drop_in_column(pixel_pos, active_player)
-                grid_to_framebuffer(grid.grid, display, (0, 2), PALETTE)
-                if grid.check_vertical(pixel_pos, active_player):
-                    print("ConnectFour vertical!")
+                grid_to_framebuffer(grid.grid, display, OFFSET, PALETTE)
+                win = grid.check_win(pixel_pos, row, active_player)
+                if win:
+                    print(f"ConnectFour! Player {active_player} wins")
                     display.show()
-                    break
-                elif grid.check_horizontal(row, active_player):
-                    print("ConnectFour horizontal!")
-                    display.show()
+                    for _ in range(10):
+                        for cell in win:
+                            display.pixel(cell[0] + OFFSET[0], DISP_HEIGHT - cell[1] - OFFSET[1] + 1, 0)
+                        display.show()
+                        time.sleep_ms(500)
+                        for cell in win:
+                            display.pixel(cell[0] + OFFSET[0],
+                                          DISP_HEIGHT - cell[1] - OFFSET[1] + 1,
+                                          PALETTE[active_player])
+                        display.show()
+                        time.sleep_ms(500)
                     break
                 else:
                     active_player = PLAYER_LIST[(PLAYER_LIST.index(active_player) + 1) % len(PLAYER_LIST)]
