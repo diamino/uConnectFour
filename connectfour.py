@@ -1,14 +1,3 @@
-from machine import Pin
-from neopixel import NeoPixel
-import neopixelmatrix as npm
-from joystick import Joystick, LEFT, RIGHT, DOWN
-import framebuf
-import time
-
-PURPLE_565 = npm.rgb888_to_565(npm.PURPLE)
-GREEN_565 = npm.rgb888_to_565(npm.GREEN)
-WHITE_565 = 0xFFFF
-
 ROWS = 6
 COLUMNS = 7
 PLAYER_LIST = (1, 2)
@@ -20,13 +9,17 @@ class ColumnFull(Exception):
 
 class Grid():
     def __init__(self, rows: int = ROWS, columns: int = COLUMNS):
+        self.rows = rows
+        self.columns = columns
         self.grid = [[0 for _ in range(rows)] for _ in range(columns)]
 
     def __str__(self) -> str:
-        return '\n'.join([' '.join([str(self.grid[column][row]) for column in range(COLUMNS)]) for row in range(ROWS - 1, -1, -1)])
+        return '\n'.join([' '.join([str(self.grid[column][row])
+                                    for column in range(self.columns)])
+                          for row in range(self.rows - 1, -1, -1)])
 
     def drop_in_column(self, column: int, player: int) -> int:
-        if column < 0 or column >= COLUMNS:
+        if column < 0 or column >= self.columns:
             raise IndexError
         try:
             first_free = self.grid[column].index(0)
@@ -38,8 +31,8 @@ class Grid():
     def check_vertical(self, column: int, player: int) -> list[tuple[int, int]]:
         count = 0
         cells = []
-        for r in self.grid[column]:
-            if r == player:
+        for r in range(self.rows):
+            if self.grid[column][r] == player:
                 count += 1
                 cells.append((column, r))
                 if count >= 4:
@@ -51,8 +44,8 @@ class Grid():
     def check_horizontal(self, row: int, player: int) -> list[tuple[int, int]]:
         count = 0
         cells = []
-        for c in self.grid:
-            if c[row] == player:
+        for c in range(self.columns):
+            if self.grid[c][row] == player:
                 count += 1
                 cells.append((c, row))
                 if count >= 4:
@@ -65,16 +58,29 @@ class Grid():
         ...
 
 
-def grid_to_framebuffer(grid: list[list[int]], fb: framebuf.FrameBuffer, offset: tuple[int, int], palette: list[int]) -> None:
-    # Erase area for grid
-    fb.rect(offset[0], offset[1], len(grid), len(grid[0]), 0, True)
-    num_rows = len(grid[0])
-    for row in range(num_rows):
-        for column in range(len(grid)):
-            fb.pixel(column + offset[0], row + offset[1], palette[grid[column][num_rows - row - 1]])
-
-
 def main() -> None:
+    import time
+    from machine import Pin
+    from neopixel import NeoPixel
+    import neopixelmatrix as npm
+    from joystick import Joystick, LEFT, RIGHT, DOWN
+    import framebuf
+
+    def grid_to_framebuffer(grid: list[list[int]],
+                            fb: framebuf.FrameBuffer,
+                            offset: tuple[int, int],
+                            palette: list[int]) -> None:
+        # Erase area for grid
+        fb.rect(offset[0], offset[1], len(grid), len(grid[0]), 0, True)
+        num_rows = len(grid[0])
+        for row in range(num_rows):
+            for column in range(len(grid)):
+                fb.pixel(column + offset[0], row + offset[1], palette[grid[column][num_rows - row - 1]])
+
+    PURPLE_565 = npm.rgb888_to_565(npm.PURPLE)
+    GREEN_565 = npm.rgb888_to_565(npm.GREEN)
+    # WHITE_565 = 0xFFFF
+
     DISP_HEIGHT = 8
     DISP_WIDTH = 8
     NO_LEDS = DISP_HEIGHT * DISP_WIDTH  # 8x8 LED matrix
@@ -112,7 +118,7 @@ def main() -> None:
                 row = grid.drop_in_column(pixel_pos, active_player)
                 grid_to_framebuffer(grid.grid, display, (0, 2), PALETTE)
                 if grid.check_vertical(pixel_pos, active_player):
-                    print("COnnectFour vertical!")
+                    print("ConnectFour vertical!")
                     display.show()
                     break
                 elif grid.check_horizontal(row, active_player):
@@ -125,6 +131,7 @@ def main() -> None:
                 display.show()
             except ColumnFull:
                 print("Column full")
+            time.sleep(1)
 
 
 if __name__ == "__main__":
