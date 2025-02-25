@@ -57,7 +57,7 @@ def main() -> None:
     display = npm.NeoPixelMatrix(np, DISP_WIDTH, DISP_HEIGHT, brightness=DISP_BRIGHTNESS)
     j = Joystick(JS_PIN_VER, JS_PIN_HOR, JS_PIN_BTN)
 
-    active_column = 0
+    active_column = grid.columns // 2
     active_player = PLAYER_LIST[0]
 
     display.pixel(active_column, 0, PALETTE[active_player])
