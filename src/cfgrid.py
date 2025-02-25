@@ -42,35 +42,46 @@ class Grid():
     def check_vertical(self, column: int, player: int) -> list[tuple[int, int]]:
         count = 0
         cells = []
+        win = False
         for r in range(self.rows):
             if self.grid[column][r] == player:
                 count += 1
                 cells.append((column, r))
                 if count >= 4:
-                    return cells
+                    win = True
             else:
+                if win:
+                    break
                 count = 0
                 cells = []
-        return []
+        if not win:
+            cells = []
+        return cells
 
     def check_horizontal(self, row: int, player: int) -> list[tuple[int, int]]:
         count = 0
         cells = []
+        win = False
         for c in range(self.columns):
             if self.grid[c][row] == player:
                 count += 1
                 cells.append((c, row))
                 if count >= 4:
-                    return cells
+                    win = True
             else:
+                if win:
+                    break
                 count = 0
                 cells = []
-        return []
+        if not win:
+            cells = []
+        return cells
 
     def check_diagonal(self, column: int, row: int, player: int) -> list[tuple[int, int]]:
         # Check bottom-up, left-right
         count = 0
         cells = []
+        win = False
         start_offset = -min(row, column)  # Left boundary
         end_offset = min(self.rows - row, self.columns - column)  # Right boundary
         for offset in range(start_offset, end_offset):
@@ -78,10 +89,14 @@ class Grid():
                 count += 1
                 cells.append((column + offset, row + offset))
                 if count >= 4:
-                    return cells
+                    win = True
             else:
+                if win:
+                    break
                 cells = []
                 count = 0
+        if win:
+            return cells
         # Check bottom-up, right-left
         count = 0
         cells = []
@@ -94,8 +109,12 @@ class Grid():
                 count += 1
                 cells.append((column - offset, row + offset))
                 if count >= 4:
-                    return cells
+                    win = True
             else:
+                if win:
+                    break
                 cells = []
                 count = 0
-        return []
+        if not win:
+            cells = []
+        return cells
