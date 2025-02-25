@@ -1,4 +1,4 @@
-from src.connectfour import Grid
+from src.cfgrid import Grid
 
 
 class TestGrid:
