@@ -107,6 +107,18 @@ class TestGrid:
                      [1, 2, 1, 1, 0, 1]]
         assert grid.check_diagonal(3, 5, 1) == [(6, 2), (5, 3), (4, 4), (3, 5)]
 
+    # Bottom-up, right-left
+    def test_diagonal_win_positive_6(self):
+        grid = Grid()
+        grid.grid = [[1, 1, 1, 2, 0, 0],
+                     [2, 1, 2, 2, 2, 0],
+                     [1, 2, 1, 2, 0, 0],
+                     [2, 1, 1, 1, 0, 0],
+                     [1, 2, 2, 1, 0, 0],
+                     [1, 2, 1, 0, 0, 0],
+                     [1, 2, 1, 0, 0, 1]]
+        assert grid.check_diagonal(3, 0, 2) == [(3, 0), (2, 1), (1, 2), (0, 3)]
+
     def test_diagonal_win_negative_1(self):
         grid = Grid()
         grid.grid = [[1, 2, 1, 1, 0, 0],

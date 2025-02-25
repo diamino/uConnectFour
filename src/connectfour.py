@@ -87,7 +87,7 @@ class Grid():
         count = 0
         cells = []
         start_offset = -min(row, self.columns - column - 1)  # Right boundary
-        end_offset = min(self.rows - row, column)  # Left boundary
+        end_offset = min(self.rows - row, column + 1)  # Left boundary
         # print(f"{start_offset=}  {end_offset=}")
         for offset in range(start_offset, end_offset):
             # print(f"Checking c={column - offset} r={row + offset}")
@@ -129,7 +129,11 @@ def main() -> None:
     DISP_WIDTH = 8
     NO_LEDS = DISP_HEIGHT * DISP_WIDTH  # 8x8 LED matrix
     DATA_PIN = 0
-    PALETTE = [0, PURPLE_565, GREEN_565]
+    PALETTE = [0,
+               PURPLE_565,
+               GREEN_565,
+               npm.rgb888_to_565(npm.BLUE),
+               npm.rgb888_to_565(npm.YELLOW)]
     OFFSET = (0, 2)
 
     grid = Grid()
