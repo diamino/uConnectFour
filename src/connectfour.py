@@ -23,6 +23,7 @@ PURPLE_565 = npm.rgb888_to_565(npm.PURPLE)
 GREEN_565 = npm.rgb888_to_565(npm.GREEN)
 BLUE_565 = npm.rgb888_to_565(npm.BLUE)
 YELLOW_565 = npm.rgb888_to_565(npm.YELLOW)
+GREY_565 = npm.rgb888_to_565((25, 25, 25))
 
 PALETTE = [0, PURPLE_565, GREEN_565, BLUE_565, YELLOW_565]
 
@@ -30,13 +31,24 @@ PALETTE = [0, PURPLE_565, GREEN_565, BLUE_565, YELLOW_565]
 def grid_to_framebuffer(grid: list[list[int]],
                         fb: framebuf.FrameBuffer,
                         offset: tuple[int, int],
-                        palette: list[int]) -> None:
+                        palette: list[int],
+                        bg: int = 0) -> None:
+    """
+    Draws a grid to a framebuffer.
+    :param grid: Grid to draw
+    :param fb: Framebuffer to draw to
+    :param offset: Offset (x,y) of the grid on the display
+    :param palette: Palette of colors (RGB565 format) to use
+    :param bg: Background color (in RGB565 format)
+    """
     # Erase area for grid
-    fb.rect(offset[0], offset[1], len(grid), len(grid[0]), 0, True)
+    fb.rect(offset[0], offset[1], len(grid), len(grid[0]), bg, True)
     num_rows = len(grid[0])
     for row in range(num_rows):
         for column in range(len(grid)):
-            fb.pixel(column + offset[0], row + offset[1], palette[grid[column][num_rows - row - 1]])
+            value = grid[column][num_rows - row - 1]
+            if value != 0:
+                fb.pixel(column + offset[0], row + offset[1], palette[value])
 
 
 def main() -> None:
@@ -49,6 +61,7 @@ def main() -> None:
     active_player = PLAYER_LIST[0]
 
     display.pixel(active_column, 0, PALETTE[active_player])
+    grid_to_framebuffer(grid.grid, display, OFFSET, PALETTE, bg=GREY_565)
     display.show()
 
     while True:
@@ -69,7 +82,7 @@ def main() -> None:
         if vpos == DOWN:
             try:
                 row = grid.drop_in_column(active_column, active_player)
-                grid_to_framebuffer(grid.grid, display, OFFSET, PALETTE)
+                grid_to_framebuffer(grid.grid, display, OFFSET, PALETTE, bg=GREY_565)
                 win = grid.check_win(active_column, row, active_player)
                 if win:
                     print(f"ConnectFour! Player {active_player} wins")
