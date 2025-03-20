@@ -83,6 +83,7 @@ def main() -> None:
             try:
                 row = grid.drop_in_column(active_column, active_player)
                 grid_to_framebuffer(grid.grid, display, OFFSET, PALETTE, bg=GREY_565)
+                display.pixel(active_column, 0, 0)
                 win = grid.check_win(active_column, row, active_player)
                 if win:
                     print(f"ConnectFour! Player {active_player} wins")
