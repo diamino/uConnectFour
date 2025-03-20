@@ -28,25 +28,28 @@ class Grid():
         return first_free
 
     def check_win(self, column: int, row: int, player: int) -> list[tuple[int, int]]:
-        result = self.check_vertical(column, player)
+        result = self.check_generic(self.generate_vertical(column), player)
         if result:
             return result
-        result = self.check_horizontal(row, player)
+        result = self.check_generic(self.generate_horizontal(row), player)
         if result:
             return result
-        result = self.check_diagonal(column, row, player)
+        result = self.check_generic(self.generate_diagonal_leftright(column, row), player)
+        if result:
+            return result
+        result = self.check_generic(self.generate_diagonal_rightleft(column, row), player)
         if result:
             return result
         return []
 
-    def check_vertical(self, column: int, player: int) -> list[tuple[int, int]]:
+    def check_generic(self, gen, player):
         count = 0
         cells = []
         win = False
-        for r in range(self.rows):
-            if self.grid[column][r] == player:
+        for c, r in gen:
+            if self.grid[c][r] == player:
                 count += 1
-                cells.append((column, r))
+                cells.append((c, r))
                 if count >= 4:
                     win = True
             else:
@@ -58,63 +61,22 @@ class Grid():
             cells = []
         return cells
 
-    def check_horizontal(self, row: int, player: int) -> list[tuple[int, int]]:
-        count = 0
-        cells = []
-        win = False
-        for c in range(self.columns):
-            if self.grid[c][row] == player:
-                count += 1
-                cells.append((c, row))
-                if count >= 4:
-                    win = True
-            else:
-                if win:
-                    break
-                count = 0
-                cells = []
-        if not win:
-            cells = []
-        return cells
+    def generate_vertical(self, column: int):
+        for row in range(self.rows):
+            yield (column, row)
 
-    def check_diagonal(self, column: int, row: int, player: int) -> list[tuple[int, int]]:
-        # Check bottom-up, left-right
-        count = 0
-        cells = []
-        win = False
+    def generate_horizontal(self, row: int):
+        for column in range(self.columns):
+            yield (column, row)
+
+    def generate_diagonal_leftright(self, column: int, row: int):
         start_offset = -min(row, column)  # Left boundary
         end_offset = min(self.rows - row, self.columns - column)  # Right boundary
         for offset in range(start_offset, end_offset):
-            if self.grid[column + offset][row + offset] == player:
-                count += 1
-                cells.append((column + offset, row + offset))
-                if count >= 4:
-                    win = True
-            else:
-                if win:
-                    break
-                cells = []
-                count = 0
-        if win:
-            return cells
-        # Check bottom-up, right-left
-        count = 0
-        cells = []
+            yield (column + offset, row + offset)
+
+    def generate_diagonal_rightleft(self, column: int, row: int):
         start_offset = -min(row, self.columns - column - 1)  # Right boundary
         end_offset = min(self.rows - row, column + 1)  # Left boundary
-        # print(f"{start_offset=}  {end_offset=}")
         for offset in range(start_offset, end_offset):
-            # print(f"Checking c={column - offset} r={row + offset}")
-            if self.grid[column - offset][row + offset] == player:
-                count += 1
-                cells.append((column - offset, row + offset))
-                if count >= 4:
-                    win = True
-            else:
-                if win:
-                    break
-                cells = []
-                count = 0
-        if not win:
-            cells = []
-        return cells
+            yield (column - offset, row + offset)
