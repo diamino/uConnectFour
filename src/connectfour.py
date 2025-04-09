@@ -26,6 +26,7 @@ YELLOW_565 = npm.rgb888_to_565(npm.YELLOW)
 GREY_565 = npm.rgb888_to_565((25, 25, 25))
 
 PALETTE = [0, PURPLE_565, GREEN_565, BLUE_565, YELLOW_565]
+BG_COLOR = GREY_565
 
 
 def grid_to_framebuffer(grid: list[list[int]],
@@ -61,7 +62,7 @@ def main() -> None:
     active_player = PLAYER_LIST[0]
 
     display.pixel(active_column, 0, PALETTE[active_player])
-    grid_to_framebuffer(grid.grid, display, OFFSET, PALETTE, bg=GREY_565)
+    grid_to_framebuffer(grid.grid, display, OFFSET, PALETTE, bg=BG_COLOR)
     display.show()
 
     while True:
@@ -82,7 +83,7 @@ def main() -> None:
         if vpos == DOWN:
             try:
                 row = grid.drop_in_column(active_column, active_player)
-                grid_to_framebuffer(grid.grid, display, OFFSET, PALETTE, bg=GREY_565)
+                grid_to_framebuffer(grid.grid, display, OFFSET, PALETTE, bg=BG_COLOR)
                 display.pixel(active_column, 0, 0)
                 win = grid.check_win(active_column, row, active_player)
                 if win:
@@ -90,7 +91,7 @@ def main() -> None:
                     display.show()
                     for _ in range(10):
                         for cell in win:
-                            display.pixel(cell[0] + OFFSET[0], DISP_HEIGHT - cell[1] - OFFSET[1] + 1, 0)
+                            display.pixel(cell[0] + OFFSET[0], DISP_HEIGHT - cell[1] - OFFSET[1] + 1, BG_COLOR)
                         display.show()
                         time.sleep_ms(500)
                         for cell in win:
